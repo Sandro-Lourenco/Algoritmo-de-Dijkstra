@@ -1,78 +1,185 @@
-# Relatório - Algoritmo de Dijkstra
+Aqui está **exatamente o seu texto convertido para Markdown**, organizado, estruturado e com formatação correta:
 
-## 1. Visão Geral e Objetivo
-O software tem como objetivo calcular o caminho de menor custo (distância) entre um vértice "raiz" (origem) e todos os outros vértices de um grafo. A implementação utiliza a estratégia gulosa do algoritmo de Dijkstra, otimizada com uma fila de prioridade para garantir performance adequada em grafos maiores.
+---
 
-## 2. Estrutura do Sistema (Arquitetura)
-O sistema é modularizado nas seguintes classes principais:
+# Análise e Documentação: Algoritmo de Dijkstra para Otimização de Rotas
 
-* **cap7/listaad/autoreferencia/Grafo**
-  Representa o grafo usando Listas de Adjacência. Cada vértice possui uma lista encadeada (Lista) contendo arestas para seus vizinhos. Utiliza a classe auxiliar GrafoAresta para armazenar origem, destino e peso.
+Este documento detalha a implementação do Algoritmo de Dijkstra em Java, utilizando uma arquitetura Spring Boot para expor os resultados via uma interface web interativa.
+O objetivo é calcular o caminho de menor custo (distância) entre dois pontos em um grafo ponderado.
 
-* **cap3/autoreferencia/Lista**
-  Uma implementação de lista encadeada simples, utilizada para armazenar as arestas de cada vértice do grafo.
+---
 
-* **cap7/FPHeapMinIndireto**
-  Uma implementação de Fila de Prioridade (Min-Heap).
-  > *Diferencial:* É "Indireta", o que significa que ela mantém um mapeamento (pos) entre o ID do vértice e sua posição no Heap. Isso permite a operação diminuiChave em tempo logarítmico, essencial para a eficiência do Dijkstra.
+## 1. Contexto e Modelagem do Problema
 
-* **cap7/Dijkstra**
-  Contém a lógica do algoritmo. Mantém arrays de antecessor (para reconstruir o caminho) e p (pesos/distâncias acumuladas). O método obterArvoreCMC executa o cálculo das distâncias.
+O projeto modela um conjunto de cidades e rotas rodoviárias como um **Grafo Ponderado**:
 
-* **cap7/Testa Dijkstra**
-  A classe principal (main) que instancia o grafo, insere arestas e executa o teste.
+* **Não-Direcionado**: no cenário das 20 cidades da Estrada de Ferro
+* **Dirigido**: no cenário de teste A–F
 
-* **cap7/RouteController (Componente Web)**
-  Uma classe controladora REST que parece tentar receber um JSON de nós e arestas para calcular rotas. Apresenta erros de compilação/dependências faltantes nos arquivos fornecidos.
+### Elementos do Grafo
 
-## 3. Entrada de Dados
-O programa aceita dados de duas formas:
+* **Vértices (V)**: Representam as cidades (ex.: Luziânia, Rio Quente, A, B, C).
+* **Arestas (E)**: Representam as rotas/estradas entre as cidades.
+* **Pesos**: Distância em quilômetros (km).
 
-1. **Entrada Estática (Console - Testa Dijkstra):**
-   * O grafo é construído programaticamente no método main.
-   * São inseridas arestas direcionadas com pesos (custos).
-   * O formato lógico insere Aresta (origem, destino, peso).
-   * Define-se um vértice raiz para iniciar a busca.
+O algoritmo central, implementado na classe `Dijkstra.java`, resolve o problema de **Caminho Mais Curto de Fonte Única (SSSP)**.
 
-2. **Entrada Dinâmica (Web - RouteController):**
-   * Recebe um objeto JSON via POST contendo listas de nodes (nós) e edges (arestas).
+---
 
-## 4. Saída de Dados
-A execução principal (Testa Dijkstra) produz as seguintes informações no console:
+## 2. Arquitetura da Solução (Estrutura Java)
 
-1. *Estrutura do Grafo:* A representação textual das listas de adjacência (ex: vértices e seus vizinhos com pesos).
-2. *Cálculo:* Mensagens de log indicando o início do cálculo a partir da raiz.
-3. *Caminhos e Custos:*
-   * Para cada vértice destino solicitado, o programa imprime a sequência de vértices a serem percorridos.
-   * O custo total acumulado desse caminho.
-   * Exemplo: Caminho de 0 ate 3: 0->1->3 (custo: 15.0).
+A solução é dividida em três camadas principais:
 
-## 5. Análise de Complexidade
-A eficiência desta implementação é determinada pelo uso do FPHeapMinIndireto em conjunto com a Lista de Adjacência.
+1. Representação do grafo
+2. Algoritmo de busca
+3. Infraestrutura web
 
-### Complexidade de Tempo
-Sendo $V$ o número de vértices e $E$ o número de arestas:
+Todas as classes do algoritmo estão no pacote `com.example.demo`.
 
-* *Inicialização:* $O(V)$ para configurar os arrays de distância e o heap.
-* *Extração do Mínimo:* Ocorre uma vez para cada vértice. Custo: $O(V \log V)$.
-* *Relaxamento de Arestas:* Graças ao mapeamento indireto no Heap, a atualização da prioridade custa $O(\log V)$. Total para todas as arestas: $O(E \log V)$.
+---
 
-*Complexidade Total:*
-$$O((V+E) \log V)$$
+### 2.1. Representação do Grafo (`Grafo.java` e `Lista.java`)
 
-> Para grafos conexos onde $E \ge V-1$, isso simplifica para *$O(E \log V)$*. Isso é significativamente mais rápido que a implementação ingênua com array ($O(V^2)$) para grafos esparsos.
+A estrutura utiliza uma **Lista de Adjacência**, que garante eficiência.
 
-### Complexidade de Espaço
-* *Grafo (Listas de Adjacência):* $O(V+E)$.
-* *Estruturas Auxiliares:* $O(V)$ (Arrays de peso, antecessor, heap).
+#### **Grafo.java**
 
-*Espaço Total:*
-$$O(V+E)$$
+* Mantém o array de listas de adjacências: `adj[]`
+* Arestas armazenadas como objetos `Grafo.Aresta`, contendo:
 
-## 6. Observações Adicionais e Limitações
-* *Pesos Negativos:* O algoritmo de Dijkstra não funciona corretamente com arestas de peso negativo (é uma limitação teórica do algoritmo).
-* *Componente Web:* Os arquivos RouteController.class contêm erros de referência (ex: Unresolved compilation problems), indicando ausência de bibliotecas do Spring Framework.
-* *Tratamento de Erros:* O código possui exceções básicas para "Heap vazio" ou "Lista vazia".
+  * `v2`: vértice destino
+  * `peso`: valor da aresta
 
-## 7. Conclusão
-O programa é uma implementação acadêmica robusta e eficiente do algoritmo de Dijkstra em Java. O uso de Listas de Adjacência combinado com um Heap Mínimo Indireto demonstra preocupação com a performance ($O(E \log V)$), tornando-o adequado para grafos de médio a grande porte.
+#### **Lista.java**
+
+* Implementação de lista encadeada genérica
+* Usada para armazenar as células de adjacência (`Grafo.Celula`)
+
+---
+
+### 2.2. O Algoritmo de Dijkstra (`Dijkstra.java`)
+
+Classe principal responsável pelo cálculo do SSSP.
+
+#### **Método chave**
+
+`obterArvoreCMC(int raiz)`
+
+#### **Estruturas Utilizadas**
+
+* `p[]`: guarda o menor peso conhecido da raiz até cada vértice `u`
+* `antecessor[]`: armazena o vértice anterior no caminho encontrado
+
+#### **Processo**
+
+1. Extrai o vértice com o menor peso (`retiraMin`)
+2. Para cada vizinho, aplica **relaxamento**:
+
+   ```
+   p[vizinho] > p[u] + peso(u, vizinho)
+   ```
+3. Atualiza pesos no heap
+
+#### **Retorno**
+
+* `getSequentialPath(int origem, int v)`: reconstrói o caminho a partir do array `antecessor`
+
+---
+
+### 2.3. Fila de Prioridade Otimizada (`FPHeapMinIndireto.java`)
+
+Para eficiência, usa-se um **Heap Mínimo Indireto**.
+
+* O heap armazena **IDs dos vértices** (`fp[]`), não os pesos
+* Os pesos são consultados no array `p[]` em `Dijkstra.java`
+* O array auxiliar `pos[]` permite atualização rápida em **O(1)**
+
+---
+
+## 3. Análise de Complexidade
+
+A eficiência do algoritmo depende das operações de heap.
+
+### Tabela de Complexidade
+
+| Operação                         | Complexidade (Heap Binário) | Ocorrências |
+| -------------------------------- | --------------------------- | ----------- |
+| Construção                       | `O(V)`                      | 1           |
+| Extração do mínimo (`retiraMin`) | `O(log V)`                  | `V` vezes   |
+| Diminuir chave (`diminuiChave`)  | `O(log V)`                  | `E` vezes   |
+
+### Complexidade total
+
+[
+\mathbf{O}((V \cdot \log V) + (E \cdot \log V))}
+]
+
+Que resulta em:
+
+[
+\mathbf{O((V + E) \cdot \log V)}
+]
+
+Essa é a complexidade clássica de Dijkstra com lista de adjacência + heap binário.
+
+---
+
+## 4. Interface Gráfica e Infraestrutura Web (Spring Boot)
+
+### Backend – Spring Boot
+
+O sistema expõe o algoritmo via API REST.
+
+#### **RouteController.java**
+
+* Recebe POST em `/api/optimize-route`
+* Inicializa o grafo (modelo A–F ou 20 cidades)
+* Executa o Dijkstra com origem/destino fornecidos
+* Retorna JSON contendo:
+
+  * `path`: lista ordenada de vértices
+  * `cost`: custo total da rota
+
+### Frontend – HTML & JavaScript
+
+#### **index.html**
+
+* Exibe seleção de origem e destino
+
+#### **script.js**
+
+* Busca lista de cidades em `/api/cities`
+* Envia origem/destino via POST para `/api/optimize-route`
+* Desenha o grafo em um `<canvas>`
+* Destaca o caminho mínimo em **roxo**
+
+---
+
+## 5. Cenário de Teste (A → F)
+
+Um cenário especial foi criado para validação do algoritmo.
+
+### **Vértices**
+
+A, B, C, D, E, F (IDs 0–5)
+
+### **Rota esperada**
+
+[
+A \rightarrow C \rightarrow B \rightarrow D \rightarrow E \rightarrow F
+]
+
+### **Custo Total**
+
+**12.00**
+
+---
+
+Se quiser, posso gerar:
+
+📌 versão PDF
+📌 versão README.md
+📌 versão com diagrama do grafo
+📌 versão com Mermaid (diagramas em Markdown)
+
+É só pedir!
