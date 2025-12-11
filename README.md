@@ -173,13 +173,4 @@ A \rightarrow C \rightarrow B \rightarrow D \rightarrow E \rightarrow F
 
 **12.00**
 
----
 
-Se quiser, posso gerar:
-
-📌 versão PDF
-📌 versão README.md
-📌 versão com diagrama do grafo
-📌 versão com Mermaid (diagramas em Markdown)
-
-É só pedir!
